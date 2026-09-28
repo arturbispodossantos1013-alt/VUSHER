@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REX TSUNAMI</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+button,input{font:inherit}button{cursor:pointer}
+.nav{height:64px;background:#0b1d34;border-bottom:1px solid #1e3b5d;display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:20}
+.logo{font-weight:900;font-size:22px;color:#4bbcff}.nav button{background:#12304e;color:white;border:1px solid #2b557a;border-radius:9px;padding:9px 13px}
+.wrap{max-width:1100px;margin:auto;padding:18px}.card{background:#0d2037;border:1px solid #20415f;border-radius:15px;padding:18px}
+.hidden{display:none!important}.coins{color:#ffd34d;font-weight:800}
+.hero{padding:28px 0}.hero h1{font-size:42px;margin:0 0 8px}.hero p{color:#b9cbe0}
+.actions{display:flex;gap:10px;flex-wrap:wrap}.primary{background:#1697e5;border:0;color:white;padding:12px 18px;border-radius:10px;font-weight:800}.secondary{background:#102b47;border:1px solid #315c80;color:white;padding:12px 18px;border-radius:10px;font-weight:700}
+.game{height:560px;position:relative;overflow:hidden;border-radius:18px;border:2px solid #234967;background:#82d4ff}
+.sky{position:absolute;inset:0;background:linear-gradient(#8bdcff 0 42%,#70c45b 42% 100%)}
+.sun{position:absolute;right:55px;top:35px;width:70px;height:70px;border-radius:50%;background:#ffe16b}
+.land{position:absolute;left:0;right:0;bottom:0;height:58%;background:#6db451}
+.road{position:absolute;left:0;right:0;bottom:0;height:27%;background:#caa46b}
+.safezone{position:absolute;right:7%;bottom:27%;width:190px;height:130px;border:5px solid #fff;background:#6d7178;border-radius:14px;text-align:center;padding-top:32px;font-size:20px;font-weight:900;z-index:3}
+.safezone small{font-size:12px}.player{position:absolute;left:8%;bottom:27%;width:32px;height:43px;background:#f0b47e;border-radius:7px;z-index:8;transition:left .08s}
+.player:before{content:"";position:absolute;left:4px;top:-17px;width:23px;height:23px;background:#f4c08d;border-radius:50%}
+.wave{position:absolute;left:-65%;bottom:16%;width:65%;height:72%;background:#087fc5;border-radius:50% 50% 0 0;z-index:7;box-shadow:0 0 30px #086fa8;opacity:.96}
+.gamehud{position:absolute;top:12px;left:12px;right:12px;z-index:12;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}.hud{background:rgba(5,20,35,.82);padding:9px 12px;border-radius:10px;font-weight:800}
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,.48);z-index:15;display:flex;align-items:center;justify-content:center;padding:20px}.modal{background:#0c2036;border:1px solid #315777;border-radius:16px;padding:24px;max-width:390px;text-align:center}
+.controls{display:flex;justify-content:center;gap:14px;margin-top:12px}.controls button{width:70px;height:52px;border:0;border-radius:12px;background:#164c73;color:#fff;font-size:23px}
+.shop{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:14px}.item{background:#102941;border:1px solid #285170;border-radius:13px;padding:15px}.item h3{margin:0 0 6px}.item p{color:#b5c8da}.item button{width:100%;background:#168fd7;color:white;border:0;border-radius:9px;padding:10px;font-weight:800}
+.admin{display:grid;grid-template-columns:250px 1fr;gap:15px}.side button{width:100%;text-align:left;margin-bottom:8px}.adminbox{min-height:300px}.danger{background:#5c2028!important;border-color:#93404a!important}.success{color:#75e19a}.warn{color:#ffd34d}.log{background:#081727;border:1px solid #1b3851;border-radius:10px;padding:10px;margin-top:10px;max-height:180px;overflow:auto;font-size:13px}
+input{width:100%;background:#071727;border:1px solid #315777;color:white;border-radius:9px;padding:11px;margin:6px 0 10px}
+.table{width:100%;border-collapse:collapse;margin-top:12px}.table th,.table td{padding:9px;border-bottom:1px solid #25445e;text-align:left}
+@media(max-width:700px){.hero h1{font-size:31px}.admin{grid-template-columns:1fr}.game{height:470px}.safezone{width:145px;height:105px;font-size:15px}.safezone small{font-size:10px}}
+
+.mountain-shop-title{margin-top:18px}.shop-grid-inner{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;margin-top:12px}.shop-grid-inner .buy{background:#168fd7;color:white;border:0;border-radius:9px;padding:10px;font-weight:800;cursor:pointer}.shop-grid-inner .buy:hover{filter:brightness(1.08)}
+.mountain-game{overflow:hidden}
+#mountainCanvas{width:100%;max-width:1000px;background:#dff4ff;border-radius:16px;border:2px solid rgba(255,255,255,.12)}
+
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="logo">REX TSUNAMI</div>
+  <div class="actions">
+    <button onclick="showPage('game')">🎮 Jogar</button>
+    <button onclick="showPage('ball')">⚽ Desviar</button>
+<button onclick="showPage('mountain')">⛰️ Pule o Monte</button>
+    <button onclick="showPage('shop')">🛒 Loja</button>
+    <button onclick="showPage('batatinha')">🥔 Batatinha 1, 2, 3</button>
+    <button onclick="showPage('admin')">⚙️ Admin</button>
+  </div>
+</nav>
+
+<main class="wrap">
+<section id="gamePage">
+  <div class="hero">
+    <h1>🌊 REX TSUNAMI</h1>
+    <p>Corra pelo mapa e chegue à zona segura antes da onda. Sobreviveu? Você ganha <b>10 REX DIN</b>.</p>
+    <div class="card" style="margin-top:15px">💰 Seu saldo: <span class="coins" id="coinDisplay">0 REX DIN</span> &nbsp;|&nbsp; ⚡ Velocidade: <span id="speedDisplay">1x</span></div>
+  </div>
+  <div class="game" id="game">
+    <div class="sky"></div><div class="sun"></div><div class="land"></div><div class="road"></div>
+    <div class="safezone" id="safezone">🏠 ZONA SEGURA<br><small>+10 REX DIN</small></div>
+    <div class="wave" id="wave"></div><div class="player" id="player"></div>
+    <div class="gamehud"><div class="hud">🌊 <span id="time">20</span>s</div><div class="hud">💰 <span id="hudCoins">0</span></div></div>
+    <div class="overlay" id="gameOverlay"><div class="modal"><h2 id="gameTitle">🌊 REX TSUNAMI</h2><p id="gameText">Chegue à zona segura para ganhar 10 REX DIN.</p><button class="primary" onclick="startGame()">JOGAR</button></div></div>
+  </div>
+  <div class="controls"><button onclick="move(-1)">⬅️</button><button onclick="move(1)">➡️</button></div>
+  <p style="text-align:center;color:#a9bfd4">Use os botões ou as setas ← → do teclado.</p>
+</section>
+
+
+<section id="ballPage" class="hidden">
+  <div class="hero">
+    <h1>⚽ Desvie da Bola</h1>
+    <p>Corra para a esquerda e para a direita e desvie das bolas que caem do céu!</p>
+    <div class="card" style="margin-top:15px">💰 REX DIN: <span class="coins" id="ballCoins">0</span> &nbsp;|&nbsp; ⚡ Velocidade: <span id="ballSpeed">1x</span> &nbsp;|&nbsp; 🏆 Recorde: <span id="ballBest">0</span></div>
+  </div>
+  <div class="game" id="ballGame" style="background:linear-gradient(#8bdcff 0 70%,#72b85b 70%)">
+    <div class="sun"></div>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:30%;background:#72b85b"></div>
+    <div id="ballPlayer" class="player"></div>
+    <div class="overlay" id="ballOverlay">
+      <div class="modal">
+        <h2 id="ballTitle">⚽ Desvie das Bolas</h2>
+        <p id="ballText">As bolas começam devagar, mas ficam cada vez mais rápidas!</p>
+        <button class="primary" id="ballStart">JOGAR</button>
+      </div>
+    </div>
+  </div>
+  <div class="controls"><button onclick="ballMove(-1)">⬅️</button><button onclick="ballMove(1)">➡️</button></div>
+  <p style="text-align:center;color:#a9bfd4">Use ← → ou os botões. A dificuldade aumenta com o tempo.</p>
+</section>
+
+<section id="shopPage" class="hidden">
+  <div class="hero"><h1>🛒 Loja REX</h1><p>Compre melhorias permanentes para este navegador.</p></div>
+  <div class="card">💰 Saldo: <span class="coins" id="shopCoins">0 REX DIN</span></div>
+  <div class="shop">
+    <div class="item"><h3>⚡ Velocidade 1</h3><p>Velocidade 1.5x</p><button onclick="buySpeed(1.520)">Comprar — 20 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 2</h3><p>Velocidade 2x</p><button onclick="buySpeed(250)">Comprar — 50 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 3</h3><p>Velocidade 3x</p><button onclick="buySpeed(3100)">Comprar — 100 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 4</h3><p>Velocidade 4x</p><button onclick="buySpeed(4180)">Comprar — 180 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 5</h3><p>Velocidade 5x</p><button onclick="buySpeed(5300)">Comprar — 300 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 6</h3><p>Velocidade 6x</p><button onclick="buySpeed(6450)">Comprar — 450 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 7</h3><p>Velocidade 7x</p><button onclick="buySpeed(7650)">Comprar — 650 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 8</h3><p>Velocidade 8x</p><button onclick="buySpeed(8950)">Comprar — 950 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 9</h3><p>Velocidade 9x</p><button onclick="buySpeed(91375)">Comprar — 1375 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 10</h3><p>Velocidade 10x</p><button onclick="buySpeed(101975)">Comprar — 1975 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 11</h3><p>Velocidade 11x</p><button onclick="buySpeed(112875)">Comprar — 2875 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 12</h3><p>Velocidade 12x</p><button onclick="buySpeed(124175)">Comprar — 4175 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 13</h3><p>Velocidade 13x</p><button onclick="buySpeed(136050)">Comprar — 6050 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 14</h3><p>Velocidade 14x</p><button onclick="buySpeed(148750)">Comprar — 8750 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 15</h3><p>Velocidade 15x</p><button onclick="buySpeed(1512700)">Comprar — 12700 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 16</h3><p>Velocidade 16x</p><button onclick="buySpeed(1618425)">Comprar — 18425 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 17</h3><p>Velocidade 17x</p><button onclick="buySpeed(1726700)">Comprar — 26700 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 18</h3><p>Velocidade 18x</p><button onclick="buySpeed(1838725)">Comprar — 38725 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 19</h3><p>Velocidade 19x</p><button onclick="buySpeed(1956150)">Comprar — 56150 REX DIN</button></div>
+    <div class="item"><h3>⚡ Velocidade 20</h3><p>Velocidade 20x</p><button onclick="buySpeed(2081425)">Comprar — 81425 REX DIN</button></div>
+  </div>
+  <div id="mountainShop" class="card" style="margin-top:18px">
+    <h3 class="mountain-shop-title">🦘 Pulos — 1x até 30x</h3>
+    <p>Escolha o nível de pulo que deseja comprar.</p>
+  </div>
+</section>
+
+<section id="mountainPage" class="hidden">
+  <div class="hero">
+    <h1>⛰️ Pule o Monte</h1>
+    <p>Pule os 10 montes, alcance cada zona segura e ganhe de 10 a 100 REX DIN.</p>
+    <div class="card" style="margin-top:15px">💰 REX DIN: <span class="coins" id="mountCoins">0</span> &nbsp;|&nbsp; 🦘 Pulo: <span id="jumpLevel">1x</span> &nbsp;|&nbsp; ⛰️ Monte: <span id="mountIndex">1/10</span></div>
+  </div>
+  <div class="game mountain-game">
+    <canvas id="mountainCanvas" width="1000" height="420"></canvas>
+    <div class="overlay" id="mountainOverlay"><div class="modal"><h2>⛰️ Pule o Monte</h2><p id="mountainMsg">Pule os obstáculos e chegue à zona segura!</p><button class="primary" onclick="startMountain()">JOGAR</button></div></div>
+  </div>
+  <div class="controls"><button onclick="jumpMountain()">🦘 PULAR</button></div>
+  <p style="text-align:center;color:#a9bfd4">Use Espaço/↑ ou o botão PULAR.</p>
+</section>
+
+<section id="batatinhaPage" class="hidden">
+  <div class="hero">
+    <h1>🥔 Batatinha Frita 1, 2, 3</h1>
+    <p>Quando o NPC estiver de costas, corra. Quando ele virar, pare imediatamente!</p>
+    <div class="card" style="margin-top:15px">💰 REX DIN: <span class="coins" id="batCoins">0</span> &nbsp;|&nbsp; 🏁 Distância: <span id="batDistance">0%</span> &nbsp;|&nbsp; 👀 <span id="batStatus">Aguardando</span></div>
+  </div>
+  <div class="game" id="batGame" style="background:linear-gradient(#8bdcff 0 68%,#72b85b 68%)">
+    <div class="sun"></div>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:32%;background:#72b85b"></div>
+    <div id="batFinish" style="position:absolute;right:9%;bottom:27%;height:150px;width:8px;background:#fff;z-index:4"></div>
+    <div id="batNpc" style="position:absolute;right:15%;bottom:27%;width:42px;height:95px;background:#b51f35;border-radius:8px;z-index:8"></div>
+    <div id="batPlayer" class="player" style="left:7%;z-index:8"></div>
+    <div class="gamehud"><div class="hud">🥔 <span id="batHud">CORRA!</span></div></div>
+    <div class="overlay" id="batOverlay"><div class="modal"><h2 id="batTitle">🥔 Batatinha Frita 1, 2, 3</h2><p id="batText">Chegue até a linha de chegada sem se mexer quando o NPC estiver olhando.</p><button class="primary" onclick="startBatatinha()">JOGAR</button></div></div>
+  </div>
+  <div class="controls">
+    <button onmousedown="batRun(true)" onmouseup="batRun(false)" ontouchstart="batRun(true)" ontouchend="batRun(false)">🏃</button>
+  </div>
+  <p style="text-align:center;color:#a9bfd4">Segure o botão 🏃 para correr. Solte imediatamente quando o NPC virar.</p>
+</section>
+
+<section id="adminPage" class="hidden">
+  <div class="hero"><h1>⚙️ Painel de Administrador</h1><p>Área de controle do REX TSUNAMI.</p></div>
+  <div id="adminLogin" class="card" style="max-width:430px">
+    <h2>🔐 Login administrativo</h2>
+    <input id="adminPass" type="password" placeholder="Senha do administrador">
+    <button class="primary" onclick="adminLogin()">Entrar no painel</button>
+    <p id="loginMsg" class="warn"></p>
+  </div>
+
+  <div id="adminPanel" class="hidden">
+    <div class="admin">
+      <aside class="side card">
+        <button class="primary" onclick="adminTab('economy')">💰 Economia</button>
+        <button class="secondary" onclick="adminTab('players')">👥 Jogadores</button>
+        <button class="secondary" onclick="adminTab('settings')">⚙️ Configurações</button>
+        <button class="secondary danger" onclick="adminLogout()">Sair do Admin</button>
+      </aside>
+      <div class="adminbox card">
+        <div id="economyTab">
+          <h2>💰 Economia global</h2>
+          <p>Use esta área para definir quantos REX DIN serão adicionados ao saldo global do protótipo.</p>
+          <label>Quantidade para distribuir para todos:</label>
+          <input id="globalAmount" type="number" min="0" step="1" value="100">
+          <button class="primary" onclick="giveGlobalCoins()">💸 DAR REX DIN PARA TODOS</button>
+          <div class="log" id="adminLog">Nenhuma operação realizada.</div>
+          <hr style="border-color:#25445e;margin:20px 0">
+          <h3>Saldo do jogador local</h3>
+          <p>Para testar o painel sem servidor, o jogador deste navegador também pode receber a quantia global.</p>
+          <p>Saldo atual: <span class="coins" id="adminLocalCoins">0 REX DIN</span></p>
+        </div>
+        <div id="playersTab" class="hidden">
+          <h2>👥 Jogadores</h2>
+          <p>Protótipo local: o navegador atual é tratado como um jogador.</p>
+          <table class="table"><thead><tr><th>Jogador</th><th>REX DIN</th><th>Velocidade</th></tr></thead><tbody id="playerTable"></tbody></table>
+        </div>
+        <div id="settingsTab" class="hidden">
+          <h2>⚙️ Configurações</h2>
+          <p>Recompensa atual da zona segura: <b>10 REX DIN</b>.</p>
+          <p>O valor está definido no código como <b>SAFE_REWARD = 10</b>.</p>
+          <p style="color:#ffca65">Importante: este protótipo usa armazenamento local. Para dar moedas a TODOS os jogadores conectados ao site de verdade, é necessário um servidor/banco de dados.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<script>
+const ADMIN_PASSWORD="REXGAMESPRO";
+const SAFE_REWARD=10;
+let state=JSON.parse(localStorage.getItem("rexTsunamiState")||'{"coins":0,"speed":1}');
+let running=false,x=8,w=-65,time=20,last=0,raf=0;
+
+function save(){localStorage.setItem("rexTsunamiState",JSON.stringify(state));updateUI()}
+function updateUI(){
+  document.querySelectorAll("#coinDisplay,#hudCoins,#shopCoins,#adminLocalCoins").forEach(e=>e.textContent=state.coins+" REX DIN");
+  document.getElementById("speedDisplay").textContent=state.speed+"x";
+  document.getElementById("playerTable").innerHTML="<tr><td>Jogador local</td><td class='coins'>"+state.coins+"</td><td>"+state.speed+"x</td></tr>";
+}
+function showPage(page){
+  document.getElementById("gamePage").classList.toggle("hidden",page!=="game");
+  document.getElementById("ballPage").classList.toggle("hidden",page!=="ball");
+  document.getElementById("mountainPage").classList.toggle("hidden",page!=="mountain");
+  document.getElementById("mountainPage").classList.toggle("active",page==="mountain");
+  document.getElementById("shopPage").classList.toggle("hidden",page!=="shop");
+  document.getElementById("adminPage").classList.toggle("hidden",page!=="admin");
+  document.getElementById("batatinhaPage").classList.toggle("hidden",page!=="batatinha");
+  document.getElementById("ballCoins").textContent=state.coins;
+  document.getElementById("ballSpeed").textContent=state.speed+"x";
+  updateUI();
+}
+function startGame(){
+  running=true;x=8;w=-65;time=20;
+  document.getElementById("player").style.left=x+"%";
+  document.getElementById("wave").style.left=w+"%";
+  document.getElementById("time").textContent=20;
+  document.getElementById("gameOverlay").classList.add("hidden");
+  last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);
+}
+function move(dir){
+  if(!running)return;
+  x=Math.max(2,Math.min(93,x+dir*2.5*state.speed));
+  document.getElementById("player").style.left=x+"%";
+  if(x>=79)win();
+}
+function loop(now){
+  if(!running)return;
+  const dt=(now-last)/1000;last=now;time-=dt;w+=dt*(3.1+state.speed*.35);
+  document.getElementById("wave").style.left=w+"%";
+  document.getElementById("time").textContent=Math.max(0,Math.ceil(time));
+  if(x>=79){win();return}
+  if(w+65>=x+1 || time<=0){lose();return}
+  raf=requestAnimationFrame(loop);
+}
+function win(){
+  if(!running)return;running=false;cancelAnimationFrame(raf);
+  state.coins+=SAFE_REWARD;save();
+  document.getElementById("gameTitle").textContent="🏆 Você sobreviveu!";
+  document.getElementById("gameText").textContent="Você chegou à zona segura e ganhou +10 REX DIN!";
+  document.getElementById("gameOverlay").classList.remove("hidden");
+}
+function lose(){
+  running=false;cancelAnimationFrame(raf);
+  document.getElementById("gameTitle").textContent="🌊 O tsunami pegou você!";
+  document.getElementById("gameText").textContent="Tente chegar à zona segura antes da onda.";
+  document.getElementById("gameOverlay").classList.remove("hidden");
+}
+function buySpeed(mult,cost){
+  if(state.speed>=mult){alert("Você já possui essa velocidade ou uma maior.");return}
+  if(state.coins<cost){alert("Você não tem REX DIN suficiente.");return}
+  state.coins-=cost;state.speed=mult;save();alert("Velocidade comprada!");
+}
+function adminLogin(){
+  const p=document.getElementById("adminPass").value;
+  if(p===ADMIN_PASSWORD){
+    document.getElementById("adminLogin").classList.add("hidden");
+    document.getElementById("adminPanel").classList.remove("hidden");
+    document.getElementById("loginMsg").textContent="";
+    updateUI();
+  }else document.getElementById("loginMsg").textContent="Senha incorreta.";
+}
+function adminLogout(){
+  document.getElementById("adminPanel").classList.add("hidden");
+  document.getElementById("adminLogin").classList.remove("hidden");
+  document.getElementById("adminPass").value="";
+}
+function adminTab(tab){
+  ["economy","players","settings"].forEach(x=>document.getElementById(x+"Tab").classList.toggle("hidden",x!==tab));
+  updateUI();
+}
+function giveGlobalCoins(){
+  const amount=Math.floor(Number(document.getElementById("globalAmount").value));
+  if(!Number.isFinite(amount)||amount<0){alert("Digite uma quantidade válida.");return}
+  state.coins+=amount;save();
+  document.getElementById("adminLog").innerHTML="<span class='success'>✓ Operação realizada: +"+amount+" REX DIN distribuídos para o jogador local.</span><br><small>Em uma versão com servidor, esta ação seria enviada para todos os jogadores cadastrados.</small>";
+}
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowLeft")move(-1);
+  if(e.key==="ArrowRight")move(1);
+});
+
+// ===== MODO DESVIE DA BOLA =====
+let ballRunning=false, ballX=48, balls=[], ballTime=0, ballLast=0, ballFrame=0, ballSpawn=0;
+let ballBest=Number(localStorage.getItem("rexBallBest")||0);
+
+function createBall(){
+  const el=document.createElement("div");
+  el.style.cssText="position:absolute;z-index:6;width:30px;height:30px;border-radius:50%;background:#ff4b4b;border:3px solid #a51f1f;box-shadow:0 2px 5px rgba(0,0,0,.25)";
+  const x=Math.random()*94;
+  el.style.left=x+"%";el.style.top="-35px";
+  document.getElementById("ballGame").appendChild(el);
+  balls.push({el:el,x:x,y:-35});
+}
+function ballMove(dir){
+  if(!ballRunning)return;
+  ballX=Math.max(3,Math.min(94,ballX+dir*(2.8+state.speed*.65)));
+  document.getElementById("ballPlayer").style.left=ballX+"%";
+}
+function startBall(){
+  ballRunning=true;ballX=48;ballTime=0;ballSpawn=0;
+  balls.forEach(b=>b.el.remove());balls=[];
+  document.getElementById("ballPlayer").style.left=ballX+"%";
+  document.getElementById("ballOverlay").classList.add("hidden");
+  ballLast=performance.now();cancelAnimationFrame(ballFrame);
+  ballFrame=requestAnimationFrame(ballLoop);
+}
+function ballLose(){
+  if(!ballRunning)return;
+  ballRunning=false;cancelAnimationFrame(ballFrame);
+  balls.forEach(b=>b.el.remove());balls=[];
+  const survived=Math.floor(ballTime);
+  if(survived>ballBest){ballBest=survived;localStorage.setItem("rexBallBest",ballBest);}
+  document.getElementById("ballBest").textContent=ballBest;
+  document.getElementById("ballTitle").textContent="💥 Você foi atingido!";
+  document.getElementById("ballText").textContent="Você sobreviveu por "+survived+" segundos. O jogo reiniciou!";
+  document.getElementById("ballStart").textContent="JOGAR NOVAMENTE";
+  document.getElementById("ballOverlay").classList.remove("hidden");
+}
+function ballLoop(now){
+  if(!ballRunning)return;
+  const dt=Math.min(.05,(now-ballLast)/1000);ballLast=now;
+  ballTime+=dt;ballSpawn+=dt;
+  const spawnEvery=Math.max(.20,1.05-ballTime*.018);
+  if(ballSpawn>=spawnEvery){ballSpawn=0;createBall();}
+  const fallSpeed=45+ballTime*3.2+state.speed*7;
+  const game=document.getElementById("ballGame");
+  const playerTop=game.clientHeight*.70-43;
+  for(let i=balls.length-1;i>=0;i--){
+    const b=balls[i];b.y+=fallSpeed*dt;b.el.style.top=b.y+"px";
+    const hitX=b.x+4>=ballX-2 && b.x<=ballX+6;
+    const hitY=b.y+30>=playerTop && b.y<=playerTop+43;
+    if(hitX&&hitY){ballLose();return;}
+    if(b.y>game.clientHeight+40){b.el.remove();balls.splice(i,1);}
+  }
+  ballFrame=requestAnimationFrame(ballLoop);
+}
+document.getElementById("ballStart").addEventListener("click",startBall);
+document.getElementById("ballBest").textContent=ballBest;
+
+updateUI();
+
+// ===== MODO BATATINHA FRITA 1, 2, 3 =====
+let bat={running:false,moving:false,looking:false,x:7,last:0,next:0};
+function batRun(on){if(bat.running)bat.moving=on;}
+function startBatatinha(){
+  bat={running:true,moving:false,looking:false,x:7,last:performance.now(),next:performance.now()+1600};
+  document.getElementById("batPlayer").style.left="7%";
+  document.getElementById("batOverlay").classList.add("hidden");
+  document.getElementById("batStatus").textContent="CORRA!";
+  document.getElementById("batHud").textContent="CORRA!";
+  requestAnimationFrame(batLoop);
+}
+function batLoop(now){
+  if(!bat.running)return;
+  const dt=Math.min(.04,(now-bat.last)/1000);bat.last=now;
+  if(now>=bat.next){
+    bat.looking=!bat.looking;
+    bat.next=now+(bat.looking?1100+Math.random()*1300:1400+Math.random()*1700);
+    document.getElementById("batStatus").textContent=bat.looking?"PARE!":"CORRA!";
+    document.getElementById("batHud").textContent=bat.looking?"PARE! 👀":"CORRA!";
+  }
+  if(bat.moving){
+    if(bat.looking){
+      bat.running=false;
+      document.getElementById("batTitle").textContent="💥 Você foi pego!";
+      document.getElementById("batText").textContent="O NPC viu você se mexendo!";
+      document.getElementById("batOverlay").classList.remove("hidden");
+      return;
+    }
+    bat.x+=18*dt;
+    document.getElementById("batPlayer").style.left=Math.min(82,bat.x)+"%";
+  }
+  const pct=Math.min(100,Math.max(0,((bat.x-7)/(82-7))*100));
+  document.getElementById("batDistance").textContent=Math.floor(pct)+"%";
+  if(bat.x>=82){
+    bat.running=false;
+    state.coins+=50;save();
+    document.getElementById("batCoins").textContent=state.coins;
+    document.getElementById("batTitle").textContent="🏆 VOCÊ VENCEU!";
+    document.getElementById("batText").textContent="Você chegou ao final e ganhou +50 REX DIN!";
+    document.getElementById("batOverlay").classList.remove("hidden");
+    return;
+  }
+  requestAnimationFrame(batLoop);
+}
+document.getElementById("batCoins").textContent=state.coins;
+</script>
+
+<script>
+/* ===== REX: PULE O MONTE ===== */
+const MOUNTAIN_REWARDS = [10,20,30,40,50,60,70,80,90,100];
+const JUMP_PRICES = {
+  1:0, 2:15, 3:30, 4:50, 5:75, 6:100, 7:130, 8:165, 9:205, 10:250,
+  11:300, 12:360, 13:430, 14:510, 15:600, 16:700, 17:820, 18:950,
+  19:1100, 20:1275, 21:1475, 22:1700, 23:1950, 24:2250, 25:2600,
+  26:3000, 27:3450, 28:3950, 29:4500, 30:5100
+};
+
+let mountain = {
+  running:false, x:90, y:330, vy:0, ground:330, jumpLevel:1,
+  mountain:0, camera:0, last:0, passed:false, message:''
+};
+
+function rexCoins(){
+  return (typeof state !== 'undefined' && Number.isFinite(state.coins)) ? state.coins : 0;
+}
+function setRexCoins(v){
+  if(typeof state !== 'undefined'){
+    state.coins = Math.max(0, Math.floor(v));
+    if(typeof save === 'function') save();
+  }
+  if(typeof updateUI === 'function') updateUI();
+  updateMountainUI();
+}
+function updateMountainUI(){
+  const c=document.getElementById('mountCoins'), j=document.getElementById('jumpLevel'), m=document.getElementById('mountIndex');
+  if(c)c.textContent=rexCoins();
+  if(j)j.textContent=mountain.jumpLevel+'x';
+  if(m)m.textContent=Math.min(mountain.mountain+1,10)+'/10';
+}
+function buildJumpShop(){
+  const box=document.getElementById('mountainShop'); if(!box)return;
+  box.innerHTML='<h3 class="mountain-shop-title">🦘 Comprar pulo</h3><div class="shop-grid-inner"></div>';
+  const grid=box.querySelector('.shop-grid-inner');
+  for(let i=1;i<=30;i++){
+    const b=document.createElement('button');
+    b.className='buy';
+    const price=JUMP_PRICES[i];
+    b.textContent=i===1?'1x — Grátis':`${i}x — ${price.toLocaleString('pt-BR')} REX DIN`;
+    b.onclick=()=>buyJump(i);
+    grid.appendChild(b);
+  }
+}
+function buyJump(level){
+  if(level<=mountain.jumpLevel){
+    mountain.jumpLevel=level;
+    updateMountainUI();
+    return;
+  }
+  const price=JUMP_PRICES[level];
+  if(rexCoins()<price){ mountainMessage('Você precisa de '+price+' REX DIN para comprar o pulo '+level+'x.'); return; }
+  setRexCoins(rexCoins()-price);
+  mountain.jumpLevel=level;
+  mountainMessage('Pulo '+level+'x comprado!');
+}
+function mountainMessage(t){
+  const e=document.getElementById('mountainMsg'); if(e)e.textContent=t;
+}
+function mountainObstacleHeight(i){
+  // Ten increasingly tall hills.
+  return 58 + i*13;
+}
+function startMountain(){
+  mountain.running=true; mountain.x=90; mountain.y=mountain.ground; mountain.vy=0;
+  mountain.mountain=0; mountain.camera=0; mountain.passed=false; mountain.last=performance.now();
+  mountainMessage('Corra e pule o monte! Você pode usar a tecla Espaço ou o botão Pular.');
+  requestAnimationFrame(mountainLoop);
+}
+function jumpMountain(){
+  if(!mountain.running)return;
+  if(mountain.y >= mountain.ground-2){
+    // Jump strength scales with purchased jump.
+    mountain.vy = -(9.5 + mountain.jumpLevel*0.42);
+  }
+}
+function mountainLoop(now){
+  if(!mountain.running)return;
+  const dt=Math.min(0.032,(now-mountain.last)/1000); mountain.last=now;
+  const speed=250 + mountain.mountain*7;
+  mountain.x += speed*dt;
+  mountain.vy += 25*dt;
+  mountain.y += mountain.vy;
+  if(mountain.y>mountain.ground){mountain.y=mountain.ground;mountain.vy=0;}
+
+  const hillStart = 330 + mountain.mountain*500;
+  const hillW = 150;
+  const hillH = mountainObstacleHeight(mountain.mountain);
+  const playerRight=mountain.x+28;
+  const hillLeft=hillStart, hillRight=hillStart+hillW;
+  const playerBottom=mountain.y;
+  // Collision while crossing the hill. Enough jump height clears it.
+  if(playerRight>hillLeft && mountain.x<hillRight && playerBottom>mountain.ground-hillH+8){
+    mountain.running=false;
+    mountainMessage('💥 Você bateu no monte! Tente novamente ou compre um pulo maior.');
+    drawMountain();
+    return;
+  }
+  // Reached the safe zone after this hill.
+  if(mountain.x>hillRight+45 && !mountain.passed){
+    mountain.passed=true;
+    const reward=MOUNTAIN_REWARDS[mountain.mountain];
+    setRexCoins(rexCoins()+reward);
+    mountainMessage(`🛡️ Zona segura! Você ganhou ${reward} REX DIN.`);
+    if(mountain.mountain===9){
+      mountain.running=false;
+      mountainMessage(`🏆 VITÓRIA! Você passou pelos 10 montes e ganhou 100 REX DIN no último monte.`);
+      drawMountain(); return;
+    }
+    mountain.mountain++;
+    mountain.x=90;
+    mountain.passed=false;
+  }
+  mountain.camera=Math.max(0,mountain.x-180);
+  drawMountain();
+  updateMountainUI();
+  requestAnimationFrame(mountainLoop);
+}
+function drawMountain(){
+  const c=document.getElementById('mountainCanvas'); if(!c)return;
+  const ctx=c.getContext('2d'), w=c.width,h=c.height;
+  ctx.clearRect(0,0,w,h);
+  // sky/ground
+  ctx.fillStyle='#dff4ff';ctx.fillRect(0,0,w,h);
+  ctx.fillStyle='#9bd18b';ctx.fillRect(0,345,w,75);
+  ctx.fillStyle='#5b9b4a';ctx.fillRect(0,360,w,60);
+  const hillStart=330, hillW=150, hillH=mountainObstacleHeight(mountain.mountain);
+  const screenHillX=hillStart-(mountain.x-90);
+  ctx.fillStyle='#7b5b3a';
+  ctx.beginPath();ctx.moveTo(screenHillX,345);ctx.lineTo(screenHillX+hillW/2,345-hillH);
+  ctx.lineTo(screenHillX+hillW,345);ctx.closePath();ctx.fill();
+  // safe zone after hill
+  ctx.fillStyle='#4bd36b';
+  ctx.fillRect(screenHillX+hillW+30,310,105,35);
+  ctx.fillStyle='#0a5';ctx.font='bold 16px Arial';ctx.fillText('ZONA SEGURA',screenHillX+hillW+37,333);
+  // player
+  const px=120, py=mountain.y-(mountain.x-90);
+  // use fixed screen player instead of world y offset
+  const drawY=mountain.y;
+  ctx.fillStyle='#1957d6';ctx.fillRect(90,drawY-48,32,48);
+  ctx.fillStyle='#ffd4a8';ctx.beginPath();ctx.arc(106,drawY-58,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#111';ctx.fillRect(98,drawY-61,4,4);ctx.fillRect(110,drawY-61,4,4);
+  ctx.fillStyle='#111';ctx.font='bold 18px Arial';
+  ctx.fillText('MONTE '+(mountain.mountain+1)+'/10',20,30);
+  ctx.fillText('PULO '+mountain.jumpLevel+'x',20,54);
+}
+document.addEventListener('keydown',e=>{
+  if((e.code==='Space'||e.key==='ArrowUp') && document.getElementById('mountainPage')?.classList.contains('active')){
+    e.preventDefault(); jumpMountain();
+  }
+});
+buildJumpShop(); updateMountainUI(); drawMountain();
+</script>
+
+</body>
+</html>
